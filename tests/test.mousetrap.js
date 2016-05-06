@@ -248,13 +248,22 @@ describe('Mousetrap.bind', function() {
 
         })
 
-        it('binding to custom character codes should work as well', function() {
+        it('binding to custom character codes below char 8 should work as well', function() {
             var spy = sinon.spy();
             Mousetrap.bind('0x003', spy, 'keydown');
 
             KeyEvent.simulate(0, 3);
             expect(spy.callCount).to.equal(1, 'callback should fire');
             expect(spy.args[0][1]).to.equal('0x003', 'callback should match "0x003"');
+        })
+
+        it('binding to custom character codes above char 400 should work as well', function() {
+            var spy = sinon.spy();
+            Mousetrap.bind('0x1ce', spy, 'keydown');
+
+            KeyEvent.simulate(0, 462);
+            expect(spy.callCount).to.equal(1, 'callback should fire');
+            expect(spy.args[0][1]).to.equal('0x1ce', 'callback should match "0x1ce"');
         })
     });
 

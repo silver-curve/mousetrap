@@ -179,6 +179,7 @@
      */
     function _characterFromEvent(e) {
 
+        //console.log("_characterFromEvent");
         //console.log("e.which: "+e.which+'\n');
         //console.log("e.type: "+e.type+'\n');
         // for keypress events we should return the character as is
@@ -187,7 +188,7 @@
             //console.log(e.which)
             //console.log(e.charCode)
             //console.log(e.keyCode )
-            if (e.which >= 8)
+            if (e.which >= 8 && e.which < 400)
             {
                 //console.log("normal char")
                 // if it's a general ascii character
@@ -218,10 +219,12 @@
 
         // for non keypress events the special maps are needed
         if (_MAP[e.which]) {
+            //console.log('return from MAP')
             return _MAP[e.which];
         }
 
         if (_KEYCODE_MAP[e.which]) {
+            //console.log('return from KEYCODE_MAP')
             return _KEYCODE_MAP[e.which];
         }
 
@@ -233,23 +236,25 @@
 
         if (e.which >= 8 && e.which < 400)
         {
+            //console.log('return from STRING')
             // if it's a general ascii character
             return String.fromCharCode(e.which).toLowerCase();
         }
         // it is a custom keycode
+        //console.log(_dec2hex(e.which));
         return '0x'+_dec2hex(e.which);
     }
 
     function _dec2hex(i)
     {
-        var result = "000";
+        var result = i.toString(16);
         if (i >= 0 && i < 16)
         {
-            result = "00" + i.toString(16);
+            result = "00" + result;
         }
         else if (i >= 16 && i < 256)
         {
-            result = "0" + i.toString(16); 
+            result = "0" + result; 
         }
         return result;
     }
