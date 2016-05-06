@@ -247,6 +247,15 @@ describe('Mousetrap.bind', function() {
             expect(spy.args[0][1]).to.equal('alt+shift++', 'callback should match "alt++"');
 
         })
+
+        it('binding to custom character codes should work as well', function() {
+            var spy = sinon.spy();
+            Mousetrap.bind('0x003', spy, 'keydown');
+
+            KeyEvent.simulate(0, 3);
+            expect(spy.callCount).to.equal(1, 'callback should fire');
+            expect(spy.args[0][1]).to.equal('0x003', 'callback should match "0x003"');
+        })
     });
 
     describe('combos with modifiers', function() {

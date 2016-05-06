@@ -179,24 +179,41 @@
      */
     function _characterFromEvent(e) {
 
+        //console.log("e.which: "+e.which+'\n');
+        //console.log("e.type: "+e.type+'\n');
         // for keypress events we should return the character as is
         if (e.type == 'keypress') {
-            var character = String.fromCharCode(e.which);
+            //console.log("it's a keypress")
+            //console.log(e.which)
+            //console.log(e.charCode)
+            //console.log(e.keyCode )
+            if (e.which >= 8)
+            {
+                //console.log("normal char")
+                // if it's a general ascii character
+                var character = String.fromCharCode(e.which);
 
-            // if the shift key is not pressed then it is safe to assume
-            // that we want the character to be lowercase.  this means if
-            // you accidentally have caps lock on then your key bindings
-            // will continue to work
-            //
-            // the only side effect that might not be desired is if you
-            // bind something like 'A' cause you want to trigger an
-            // event when capital A is pressed caps lock will no longer
-            // trigger the event.  shift+a will though.
-            if (!e.shiftKey) {
-                character = character.toLowerCase();
+                // if the shift key is not pressed then it is safe to assume
+                // that we want the character to be lowercase.  this means if
+                // you accidentally have caps lock on then your key bindings
+                // will continue to work
+                //
+                // the only side effect that might not be desired is if you
+                // bind something like 'A' cause you want to trigger an
+                // event when capital A is pressed caps lock will no longer
+                // trigger the event.  shift+a will though.
+                if (!e.shiftKey) {
+                    character = character.toLowerCase();
+                }
+
+                return character;
             }
-
-            return character;
+            //console.log("abnormal char "+e.which)
+            if (e.which !== 0)
+            {
+                // it is a custom keycode
+                return '0x'+_dec2hex(e.which);
+            }
         }
 
         // for non keypress events the special maps are needed
@@ -213,9 +230,29 @@
         // with keydown and keyup events the character seems to always
         // come in as an uppercase character whether you are pressing shift
         // or not.  we should make sure it is always lowercase for comparisons
-        return String.fromCharCode(e.which).toLowerCase();
+
+        if (e.which >= 8 && e.which < 400)
+        {
+            // if it's a general ascii character
+            return String.fromCharCode(e.which).toLowerCase();
+        }
+        // it is a custom keycode
+        return '0x'+_dec2hex(e.which);
     }
 
+    function _dec2hex(i)
+    {
+        var result = "000";
+        if (i >= 0 && i < 16)
+        {
+            result = "00" + i.toString(16);
+        }
+        else if (i >= 16 && i < 256)
+        {
+            result = "0" + i.toString(16); 
+        }
+        return result;
+    }
     /**
      * checks if two arrays are equal
      *
@@ -532,6 +569,8 @@
             var action = e.type;
 
             // if there are no events related to this keycode
+            //console.log("_getMatches");
+            //console.log(JSON.stringify(self._callbacks))
             if (!self._callbacks[character]) {
                 return [];
             }
@@ -546,18 +585,23 @@
             for (i = 0; i < self._callbacks[character].length; ++i) {
                 callback = self._callbacks[character][i];
 
+                //console.log("found callback")
+                //console.log(JSON.stringify(callback))
                 // if a sequence name is not specified, but this is a sequence at
                 // the wrong level then move onto the next match
                 if (!sequenceName && callback.seq && _sequenceLevels[callback.seq] != callback.level) {
                     continue;
                 }
 
+                //console.log(action)
+                //console.log(callback.action)
                 // if the action we are looking for doesn't match the action we got
                 // then we should keep going
                 if (action != callback.action) {
                     continue;
                 }
 
+                //console.log(2)
                 // if this is a keypress event and the meta key and control key
                 // are not pressed that means that we need to only look at the
                 // character, otherwise check the modifiers as well
@@ -567,6 +611,7 @@
                 // firefox will fire a keypress if meta or control is down
                 if ((action == 'keypress' && !e.metaKey && !e.ctrlKey) || _modifiersMatch(modifiers, callback.modifiers)) {
 
+                    //console.log("MATCH")
                     // when you bind a combination or sequence a second time it
                     // should overwrite the first one.  if a sequenceName or
                     // combination is specified in this call it does just that
@@ -617,7 +662,11 @@
          * @returns void
          */
         self._handleKey = function(character, modifiers, e) {
+            //console.log("handleKey");
+            //console.log(character);
+            //console.log(modifiers);
             var callbacks = _getMatches(character, modifiers, e);
+            //console.log(callbacks.length);
             var i;
             var doNotReset = {};
             var maxLevel = 0;
@@ -703,6 +752,7 @@
          * @returns void
          */
         function _handleKeyEvent(e) {
+            //console.log("_handleKeyEvent "+e.type);
 
             // normalize e.which for key events
             // @see http://stackoverflow.com/questions/4285627/javascript-keycode-vs-charcode-utter-confusion
@@ -711,6 +761,8 @@
             }
 
             var character = _characterFromEvent(e);
+
+            //console.log('character '+character);
 
             // no character found then stop
             if (!character) {
